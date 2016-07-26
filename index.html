@@ -1,0 +1,114 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+
+    <script>
+
+    var POWER_PLANT, CONTEXT;
+
+    function Particle(radius,color,speed,angle,generator){
+        this.x = POWER_PLANT.width / 2;
+        this.y = POWER_PLANT.height / 2;
+        this.speed = speed;
+        this.angle = angle;
+        this.generator = generator;
+        this.id = new Date().getTime();
+
+        this.draw = function(){
+            CONTEXT.beginPath();
+            CONTEXT.arc(this.x, this.y, radius, 0, 2 * Math.PI, false);
+            CONTEXT.fillStyle = color;
+            CONTEXT.fill();
+        }
+
+        this.move = function(){
+            // var particle = this;
+            this.x += this.speed * Math.cos(this.angle * Math.PI / 180);
+            this.y += this.speed * Math.sin(this.angle * Math.PI / 180);
+            this.draw();
+            // setTimeout(function(){
+            //     particle.x += particle.speed * Math.cos(particle.angle * Math.PI / 180);
+            //     particle.y += particle.speed * Math.sin(particle.angle * Math.PI / 180);
+            //     particle.draw();
+            //
+            //     particle.move();
+            // },10);
+            if(this.x < 0 || this.y < 0 || this.x > POWER_PLANT.width || this.y > POWER_PLANT.height) delete generator.removeParticle(this.id);
+        }
+    }
+
+    function Generator(particles_amount,mean_radius,mean_speed,particles_color){
+        this.particles = {};
+        this.current_amount = 0;
+        this.particles_amount = particles_amount;
+        var min_radius = (mean_radius-2 < 1) ? 1 : mean_radius-2;
+        this.radius = [min_radius,mean_radius+2];
+        var min_speed = ((mean_speed-2)*0.1 < 0.1) ? 0.1 : (mean_speed-2)*0.1;
+        this.speed = [min_speed,(mean_speed+2)*0.1];
+
+        for(var i=0;i<particles_amount;i++){
+
+        }
+
+        this.setParticle = function(){
+            if(this.current_amount < this.particles_amount){
+                angle = random(1,360);
+                radius = random(this.radius[0],this.radius[1]);
+                speed = random(this.speed[0],this.speed[1]);
+                particle = new Particle(radius,particles_color,speed,angle,this);
+                this.particles[particle.id] = particle;
+                this.current_amount++;
+            }
+        };
+
+        this.removeParticle = function(id){
+            delete this.particles[this.id];
+            this.current_amount--;
+        };
+
+        this.animate = function(){
+            var generator = this;
+
+            CONTEXT.clearRect(0, 0, POWER_PLANT.width, POWER_PLANT.height);
+            this.setParticle();
+
+            for(var k in this.particles){
+                particle = this.particles[k];
+                particle.move();
+            }
+
+            setTimeout(function(){
+                generator.animate();
+            },10);
+        }
+    }
+
+    function start(){
+        // var generator = new Generator(speed,amount);
+        POWER_PLANT = document.getElementById('power_plant');
+        CONTEXT = POWER_PLANT.getContext('2d');
+
+        var generator = new Generator(300,1,5,'red');
+        generator.animate();
+        // var particle = new Particle('5','green',1,360);
+        // particle.move(90,1/5);
+    }
+
+    function arrayRandom(array){
+        var max = array.length - 1;
+        var i = random(0,max);
+        return array[i];
+    }
+
+    function random(min,max){
+        return Math.floor(Math.random() * max) + min;
+    }
+
+    </script>
+
+</head>
+<body onload="start()">
+    <canvas id="power_plant"></canvas>
+</body>
+</html>
